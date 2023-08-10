@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Parcel Sandbox</title>
+    <meta charset="UTF-8">
+  <link rel="stylesheet" href="/dist/2bd3ee55e0dcd41dd8c0e1a858e34b4b.css"></head>
+
+  <body>
+    <canvas id="three"></canvas>
+
+    <script type="x-shader/x-fragment" id="fragmentShader">
+      precision mediump float;
+      varying vec2 v_uv;
+      varying vec4 vColor;
+      varying vec3 vNormal;
+      varying vec3 vPosition;
+
+      uniform vec2 u_resolution;
+      uniform vec2 u_mouse;
+      uniform float u_time;
+
+      void main() {
+        vec3 baseColor = vColor.xyz;
+        vec3 normal = normalize(vNormal);
+        normal = normalize(
+          cross(
+            dFdx(vPosition),
+            dFdy(vPosition)
+          )
+        );
+
+        // ambient
+        vec3 ambientColor = vec3(1.);
+
+        // sun light
+        vec3 sunDir = normalize(vec3(1., 1., 1.));
+        vec3 sunColor = vec3(1., 1., 0.9);
+        float dp = max(0., dot(normal, sunDir));
+
+        vec3 sunLight = dp * sunColor ;
+
+        vec3 light = sunLight * 0.5 + ambientColor * 0.9;
+
+       vec3 color = baseColor * light;
+
+      	gl_FragColor = vec4(color, 1.0);
+      }
+    </script>
+
+    <script type="x-shader/x-vertex" id="vertexShader">
+      varying vec2 v_uv;
+      varying vec4 vColor;
+      varying vec3 vNormal;
+      varying vec3 vPosition;
+
+      uniform float u_time;
+
+
+      float inverselerp(float v, float minV, float maxV) {
+        return (v - minV) / (maxV - minV);
+      }
+
+      float remap(float v, float inMinV, float inMaxV, float outMinV, float outMaxV){
+        float t = inverselerp(v, inMinV, inMaxV);
+        return mix(outMinV, outMaxV, v);
+      }
+
+      void main() {
+          vec3 localSpacePos = position;
+
+          float t = (sin(localSpacePos.y * 20. + u_time * 5.));
+          t = remap(t, -1., 1., 0., 0.06);
+
+          localSpacePos += normal * t;
+
+      		v_uv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(localSpacePos, 1.0);
+          vNormal = (modelMatrix * vec4(normal, 0.)).xyz;
+          vPosition = (modelMatrix * vec4(position, 1.)).xyz;
+
+          vColor = mix(vec4(0.1,.5, 0.1, 1.), vec4(0.4, 0.2, 0.7, 1.), t);
+      }
+    </script>
+
+    <script src="/dist/2bd3ee55e0dcd41dd8c0e1a858e34b4b.js"></script>
+  </body>
+</html>
