@@ -1,0 +1,16 @@
+canvas {
+    width: 100%;
+    height: 100vh;
+    display: block;
+}
+
+body
+
+{overflow:hidden;
+background:black;
+-webkit-animation:zoom 1;
+animation-duration:1000s;}
+
+@keyframes zoom
+
+{0% {transform:scale(2);}}
